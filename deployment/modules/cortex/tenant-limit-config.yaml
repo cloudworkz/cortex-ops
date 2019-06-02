@@ -1,0 +1,7 @@
+overrides:
+  tenant-a:
+    ingestion_rate: 300000
+    ingestion_burst_size: 600000
+    max_series_per_metric: 40000
+    max_series_per_user: 1000000
+    

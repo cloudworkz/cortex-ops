@@ -1,0 +1,10 @@
+configs:
+- from: 2019-05-29
+  chunks:
+    period: 168h
+    prefix: cortex_chunks_
+  index:
+    period: 168h
+    prefix: cortex_index_
+  store: bigtable-hashed
+  schema: v10
