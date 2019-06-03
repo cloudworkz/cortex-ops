@@ -111,7 +111,7 @@ resource "kubernetes_deployment" "querier" {
             "-server.http-listen-port=${var.querier_http_port}",
             "-server.http-write-timeout=1m",
             "-consul.hostname=${var.consul_hostname}:${var.consul_port}",
-            "-querier.frontend-address=${kubernetes_service.query-frontend.metadata.0.name}.${kubernetes_service.query-frontend.metadata.0.namespace}:${var.grpc_port}",
+            "-querier.frontend-address=${kubernetes_service.query-frontend-headless.metadata.0.name}.${kubernetes_service.query-frontend-headless.metadata.0.namespace}:${var.grpc_port}",
             "-querier.batch-iterators=true",
             "-querier.ingester-streaming=true",
             "-querier.frontend-client.grpc-max-send-msg-size=104857600",
