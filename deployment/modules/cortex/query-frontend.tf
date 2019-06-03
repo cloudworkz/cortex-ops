@@ -174,3 +174,30 @@ resource "kubernetes_service" "query-frontend" {
     }
   }
 }
+
+# Service
+resource "kubernetes_service" "query-frontend-headless" {
+  metadata {
+    name      = "cortex-query-frontend-headless"
+    namespace = "${var.namespace}"
+  }
+
+  spec {
+    selector {
+      app       = "${kubernetes_deployment.query-frontend.spec.0.template.0.metadata.0.labels.app}"
+      component = "${kubernetes_deployment.query-frontend.spec.0.template.0.metadata.0.labels.component}"
+    }
+
+    cluster_ip = "None"
+    
+    port {
+      name = "http"
+      port = "${var.query_frontend_http_port}"
+    }
+
+    port {
+      name = "grpc"
+      port = "${var.grpc_port}"
+    }
+  }
+}
