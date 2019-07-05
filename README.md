@@ -4,7 +4,7 @@ This repository has been created to build a community around operating [Cortex](
 
 **In this repository we seek to provide:**
 
-- A production ready setup which should suit most companies' needs in terms of scale and performance
+- A production ready setup (created for GKE + BigTable) which should suit most companies' needs in terms of scale and performance
 - Operational knowledge (FAQs, clarifying the microservice architecture)
 - Premade monitoring solutions (Grafna dashboards)
 
