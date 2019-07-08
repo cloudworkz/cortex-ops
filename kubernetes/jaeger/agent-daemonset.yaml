@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: jaeger
+    component: agent
+  name: jaeger-agent
+  namespace: monitoring
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: jaeger
+      component: agent
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "14271"
+        prometheus.io/scrape: "true"
+      labels:
+        app: jaeger
+        component: agent
+    spec:
+      containers:
+      - env:
+        - name: COLLECTOR_HOST_PORT
+          value: jaeger-collector.monitoring:14267
+        image: jaegertracing/jaeger-agent:1.12
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: health
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: agent
+        ports:
+        - containerPort: 5775
+          hostPort: 5775
+          name: zipkin
+          protocol: UDP
+        - containerPort: 6831
+          hostPort: 6831
+          name: compact
+          protocol: UDP
+        - containerPort: 6832
+          hostPort: 6832
+          name: binary
+          protocol: UDP
+        - containerPort: 5778
+          hostPort: 5778
+          name: sampling
+          protocol: TCP
+        - containerPort: 14271
+          hostPort: 14271
+          name: health
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: health
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 500m
+            memory: 300Mi
+          requests:
+            cpu: 20m
+            memory: 50Mi
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate

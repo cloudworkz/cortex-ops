@@ -1,0 +1,101 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: cortex
+    component: distributor
+  name: cortex-distributor
+  namespace: monitoring
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: cortex
+      component: distributor
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: cortex
+        component: distributor
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cortex
+                - key: component
+                  operator: In
+                  values:
+                  - distributor
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cortex
+                - key: component
+                  operator: In
+                  values:
+                  - distributor
+              topologyKey: kubernetes.io/hostname
+            weight: 20
+      containers:
+      - args:
+        - -target=distributor
+        - -server.http-listen-port=80
+        - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
+        - -distributor.health-check-ingesters=true
+        - -distributor.ingestion-burst-size=200000
+        - -distributor.ingestion-rate-limit=100000
+        - -distributor.remote-timeout=20s
+        - -distributor.replication-factor=3
+        - -distributor.shard-by-all-labels=true
+        - -ring.heartbeat-timeout=5m
+        - -validation.reject-old-samples=true
+        - -validation.reject-old-samples.max-age=12h
+        - -limits.per-user-override-config=/etc/cortex/validation/config.yaml
+        env:
+        - name: JAEGER_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: JAEGER_SAMPLER_TYPE
+          value: ratelimiting
+        - name: JAEGER_SAMPLER_PARAM
+          value: "7"
+        image: quay.io/cortexproject/cortex:master-5d867bc1
+        imagePullPolicy: IfNotPresent
+        name: distributor
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/cortex/validation
+          name: tenant-limit-config
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: tenant-limit-config
+        name: tenant-limit-config

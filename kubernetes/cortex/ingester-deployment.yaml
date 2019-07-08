@@ -1,0 +1,141 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: cortex
+    component: ingester
+  name: cortex-ingester
+  namespace: monitoring
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: cortex
+      component: ingester
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+      labels:
+        app: cortex
+        component: ingester
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cortex
+                - key: component
+                  operator: In
+                  values:
+                  - ingester
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - cortex
+              - key: component
+                operator: In
+                values:
+                - ingester
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - -target=ingester
+        - -server.http-listen-port=80
+        - -server.grpc-max-concurrent-streams=100000
+        - -ingester.chunk-encoding=3
+        - -ingester.join-after=30s
+        - -ingester.claim-on-rollout=true
+        - -ingester.max-chunk-age=6h
+        - -ingester.max-chunk-idle=15m
+        - -ingester.max-series-per-metric=10000
+        - -ingester.max-series-per-user=250000
+        - -ingester.max-transfer-retries=60
+        - -ingester.normalise-tokens=true
+        - -ingester.num-tokens=512
+        - -ingester.retain-period=15m
+        - -validation.reject-old-samples=true
+        - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
+        - -memcached.batchsize=1024
+        - -memcached.hostname=memcached.monitoring
+        - -memcached.timeout=3s
+        - -memcached.service=memcached-client
+        - -bigtable.instance=cortex
+        - -bigtable.project=rd-bigdata-prd-v002
+        - -config-yaml=/etc/cortex/schema/config.yaml
+        - -limits.per-user-override-config=/etc/cortex/validation/config.yaml
+        env:
+        - name: JAEGER_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: JAEGER_SAMPLER_TYPE
+          value: ratelimiting
+        - name: JAEGER_SAMPLER_PARAM
+          value: "7"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/credentials.json
+        image: quay.io/cortexproject/cortex:master-5d867bc1
+        imagePullPolicy: IfNotPresent
+        name: ingester
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 80
+        resources:
+          limits:
+            cpu: "2"
+            memory: 10Gi
+          requests:
+            cpu: "1"
+            memory: 8Gi
+        volumeMounts:
+        - mountPath: /etc/cortex/schema
+          name: cortex-schema-config
+        - mountPath: /etc/cortex/validation
+          name: tenant-limit-config
+        - mountPath: /var/secrets/google
+          name: sa-cortex
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: 2400
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: cortex-schema-config
+        name: cortex-schema-config
+      - configMap:
+          defaultMode: 420
+          name: tenant-limit-config
+        name: tenant-limit-config
+      - name: sa-cortex
+        secret:
+          defaultMode: 420
+          optional: false
+          secretName: sa-cortex

@@ -1,0 +1,135 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: cortex
+    component: querier
+  name: cortex-querier
+spec:
+  replicas: 4
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: cortex
+      component: querier
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+      labels:
+        app: cortex
+        component: querier
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cortex
+                - key: component
+                  operator: In
+                  values:
+                  - querier
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - cortex
+              - key: component
+                operator: In
+                values:
+                - querier
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - args:
+        - -target=querier
+        - -server.http-listen-port=80
+        - -server.http-write-timeout=1m
+        - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
+        - -querier.frontend-address=cortex-query-frontend-headless.monitoring:9095
+        - -querier.batch-iterators=true
+        - -querier.ingester-streaming=true
+        - -querier.frontend-client.grpc-max-send-msg-size=104857600
+        - -querier.max-concurrent=4
+        - -querier.max-samples=100000000
+        - -querier.query-ingesters-within=12h
+        - -querier.worker-parallelism=2
+        - -ring.heartbeat-timeout=5m
+        - -distributor.health-check-ingesters=true
+        - -distributor.replication-factor=3
+        - -distributor.shard-by-all-labels=true
+        - -bigtable.instance=cortex
+        - -bigtable.project=rd-bigdata-prd-v002
+        - -store.cache-lookups-older-than=36h
+        - -store.cardinality-limit=2000000
+        - -store.index-cache-read.cache.enable-fifocache=true
+        - -store.index-cache-read.fifocache.size=102400
+        - -store.index-cache-read.memcached.hostname=memcached.monitoring
+        - -store.index-cache-read.memcached.service=memcached-client
+        - -store.index-cache-validity=14m
+        - -store.max-query-length=744h
+        - -store.min-chunk-age=15m
+        - -memcached.hostname=memcached.monitoring
+        - -memcached.service=memcached-client
+        - -memcached.batchsize=1024
+        - -memcached.timeout=3s
+        - -distributor.replication-factor=3
+        - -config-yaml=/etc/cortex/schema/config.yaml
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/credentials.json
+        - name: JAEGER_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: JAEGER_SAMPLER_TYPE
+          value: ratelimiting
+        - name: JAEGER_SAMPLER_PARAM
+          value: "7"
+        image: quay.io/cortexproject/cortex:master-5d867bc1
+        imagePullPolicy: IfNotPresent
+        name: querier
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 250m
+            memory: 50Mi
+        volumeMounts:
+        - mountPath: /etc/cortex/schema
+          name: cortex-schema-config
+        - mountPath: /var/secrets/google
+          name: sa-cortex
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: cortex-schema-config
+        name: cortex-schema-config
+      - name: sa-cortex
+        secret:
+          defaultMode: 420
+          optional: false
+          secretName: sa-cortex
