@@ -6,7 +6,7 @@ metadata:
 data:
   config.yaml: |-
     configs:
-    - from: 2019-07-08
+    - from: 2019-09-09
       chunks:
         period: 168h
         prefix: cortex_chunks_

@@ -29,68 +29,68 @@ spec:
       namespace: default
     spec:
       containers:
-      - args:
-        - -target=table-manager
-        - -server.http-listen-port=80
-        - -bigtable.backoff-on-ratelimits=true
-        - -bigtable.grpc-client-rate-limit=5
-        - -bigtable.grpc-client-rate-limit-burst=5
-        - -bigtable.instance=cortex
-        - -bigtable.project=rd-bigdata-prd-v002
-        - -table-manager.retention-deletes-enabled=true
-        - -table-manager.retention-period=2190h
-        - -dynamodb.chunk-table.inactive-read-throughput=0
-        - -dynamodb.chunk-table.inactive-write-throughput=0
-        - -dynamodb.chunk-table.read-throughput=0
-        - -dynamodb.chunk-table.write-throughput=0
-        - -dynamodb.use-periodic-tables=true
-        - -dynamodb.periodic-table.inactive-read-throughput=0
-        - -dynamodb.periodic-table.inactive-write-throughput=0
-        - -dynamodb.periodic-table.read-throughput=0
-        - -dynamodb.periodic-table.write-throughput=0
-        - -dynamodb.poll-interval=5m
-        - -config-yaml=/etc/cortex/schema/config.yaml
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /var/secrets/google/credentials.json
-        - name: JAEGER_AGENT_HOST
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.hostIP
-        - name: JAEGER_SAMPLER_TYPE
-          value: ratelimiting
-        - name: JAEGER_SAMPLER_PARAM
-          value: "7"
-        image: quay.io/cortexproject/cortex:master-5d867bc1
-        imagePullPolicy: IfNotPresent
-        name: table-manager
-        ports:
-        - containerPort: 80
-          name: http
-          protocol: TCP
-        - containerPort: 9095
-          name: grpc
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 250m
-            memory: 50Mi
-        volumeMounts:
-        - mountPath: /etc/cortex/schema
-          name: cortex-schema-config
-        - mountPath: /var/secrets/google
-          name: sa-cortex
+        - args:
+            - -target=table-manager
+            - -server.http-listen-port=80
+            - -bigtable.backoff-on-ratelimits=true
+            - -bigtable.grpc-client-rate-limit=5
+            - -bigtable.grpc-client-rate-limit-burst=5
+            - -bigtable.instance=cortex
+            - -bigtable.project=gcp-project-name
+            - -table-manager.retention-deletes-enabled=true
+            - -table-manager.retention-period=336h
+            - -dynamodb.chunk-table.inactive-read-throughput=0
+            - -dynamodb.chunk-table.inactive-write-throughput=0
+            - -dynamodb.chunk-table.read-throughput=0
+            - -dynamodb.chunk-table.write-throughput=0
+            - -dynamodb.use-periodic-tables=true
+            - -dynamodb.periodic-table.inactive-read-throughput=0
+            - -dynamodb.periodic-table.inactive-write-throughput=0
+            - -dynamodb.periodic-table.read-throughput=0
+            - -dynamodb.periodic-table.write-throughput=0
+            - -dynamodb.poll-interval=5m
+            - -config-yaml=/etc/cortex/schema/config.yaml
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/credentials.json
+            - name: JAEGER_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: JAEGER_SAMPLER_TYPE
+              value: ratelimiting
+            - name: JAEGER_SAMPLER_PARAM
+              value: "7"
+          image: quay.io/cortexproject/cortex:v0.2.0
+          imagePullPolicy: IfNotPresent
+          name: table-manager
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+            - containerPort: 9095
+              name: grpc
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 50Mi
+          volumeMounts:
+            - mountPath: /etc/cortex/schema
+              name: cortex-schema-config
+            - mountPath: /var/secrets/google
+              name: sa-cortex
       volumes:
-      - configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: cortex-schema-config
           name: cortex-schema-config
-        name: cortex-schema-config
-      - name: sa-cortex
-        secret:
-          defaultMode: 420
-          optional: false
-          secretName: sa-cortex
+        - name: sa-cortex
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: sa-cortex

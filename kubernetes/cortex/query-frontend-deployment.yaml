@@ -31,69 +31,69 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - cortex
-                - key: component
-                  operator: In
-                  values:
-                  - query-frontend
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - cortex
+                    - key: component
+                      operator: In
+                      values:
+                        - query-frontend
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
           requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - cortex
-              - key: component
-                operator: In
-                values:
-                - query-frontend
-            topologyKey: kubernetes.io/hostname
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - cortex
+                  - key: component
+                    operator: In
+                    values:
+                      - query-frontend
+              topologyKey: kubernetes.io/hostname
       containers:
-      - args:
-        - -target=query-frontend
-        - -server.http-listen-port=80
-        - -server.grpc-listen-port=9095
-        - -server.grpc-max-recv-msg-size-bytes=104857600
-        - -querier.split-queries-by-day=true
-        - -querier.align-querier-with-step=true
-        - -frontend.max-cache-freshness=10m
-        - -frontend.memcached.hostname=memcached.monitoring
-        - -frontend.memcached.service=memcached-client
-        - -frontend.memcached.timeout=200ms
-        - -querier.align-querier-with-step=true
-        - -querier.cache-results=true
-        - -querier.compress-http-responses=true
-        - -querier.split-queries-by-day=true
-        - -server.http-write-timeout=1m
-        - -store.max-query-length=6000h
-        env:
-        - name: JAEGER_AGENT_HOST
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: status.hostIP
-        - name: JAEGER_SAMPLER_TYPE
-          value: ratelimiting
-        - name: JAEGER_SAMPLER_PARAM
-          value: "7"
-        image: quay.io/cortexproject/cortex:master-5d867bc1
-        imagePullPolicy: IfNotPresent
-        name: query-frontend
-        ports:
-        - containerPort: 80
-          name: http
-          protocol: TCP
-        - containerPort: 9095
-          name: grpc
-          protocol: TCP
-        resources: {}
+        - args:
+            - -target=query-frontend
+            - -server.http-listen-port=80
+            - -server.grpc-listen-port=9095
+            - -server.grpc-max-recv-msg-size-bytes=104857600
+            - -querier.split-queries-by-day=true
+            - -querier.align-querier-with-step=true
+            - -frontend.max-cache-freshness=10m
+            - -frontend.memcached.hostname=memcached.monitoring
+            - -frontend.memcached.service=memcached-client
+            - -frontend.memcached.timeout=200ms
+            - -querier.align-querier-with-step=true
+            - -querier.cache-results=true
+            - -querier.compress-http-responses=true
+            - -querier.split-queries-by-day=true
+            - -server.http-write-timeout=1m
+            - -store.max-query-length=744h
+          env:
+            - name: JAEGER_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: JAEGER_SAMPLER_TYPE
+              value: ratelimiting
+            - name: JAEGER_SAMPLER_PARAM
+              value: "7"
+          image: quay.io/cortexproject/cortex:master-5d867bc1
+          imagePullPolicy: IfNotPresent
+          name: query-frontend
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+            - containerPort: 9095
+              name: grpc
+              protocol: TCP
+          resources: {}
       restartPolicy: Always
       schedulerName: default-scheduler
