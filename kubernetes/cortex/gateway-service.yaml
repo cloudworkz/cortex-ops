@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cortex-gateway
+  namespace: monitoring
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+    - name: cortex-gateway
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: cortex
+    component: gateway
+  sessionAffinity: None
+  type: NodePort

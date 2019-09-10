@@ -1,0 +1,116 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: cortex
+    component: gateway
+  name: cortex-gateway
+  namespace: monitoring
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: cortex
+      component: gateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: cortex
+        component: gateway
+      namespace: default
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - cortex
+                    - key: component
+                      operator: In
+                      values:
+                        - gateway
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - cortex
+                    - key: component
+                      operator: In
+                      values:
+                        - gateway
+                topologyKey: kubernetes.io/hostname
+              weight: 20
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - -server.http-listen-port=80
+            - -gateway.distributor.address=http://cortex-distributor.monitoring
+            - -gateway.query-frontend.address=http://cortex-query-frontend.monitoring
+            - -gateway.auth.jwt-secret=$(JWT_SECRET)
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: jwt_secret
+                  name: cortex-jwt-secret
+            - name: JAEGER_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: JAEGER_SAMPLER_TYPE
+              value: ratelimiting
+            - name: JAEGER_SAMPLER_PARAM
+              value: "7"
+          image: quay.io/weeco/cortex-gateway:v0.1.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: gateway
+          ports:
+            - containerPort: 80
+              name: cortex-gateway
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 100Mi
+            requests:
+              cpu: 300m
+              memory: 30Mi
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
