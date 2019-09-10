@@ -6,7 +6,7 @@ This repository has been created to build a community around operating [Cortex](
 
 - A production ready setup (created for GKE + BigTable) which should suit most companies' needs in terms of scale and performance
 - Operational knowledge (FAQs, clarifying the microservice architecture)
-- Premade monitoring solutions (Grafna dashboards)
+- Premade monitoring solutions (Grafana dashboards)
 
 Most of the granted information shall serve as inspiration for your own deployment. Due to the complexity and the large variety of configurations it is very likely that this setup does not suit all your needs.
 
