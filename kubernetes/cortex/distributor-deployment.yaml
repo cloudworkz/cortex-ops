@@ -61,6 +61,16 @@ spec:
             - -target=distributor
             - -server.http-listen-port=80
             - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
+
+            # HA tracker options
+            - -distributor.ha-tracker.enable=true,
+            - -distributor.ha-tracker.enable-for-all-users=true,
+            - -distributor.ha-tracker.consul.hostname=consul-server.hashicorp.svc.cluster.local:8500,
+            - -distributor.ha-tracker.prefix=ha/,
+            - -distributor.ha-tracker.store=consul,
+            - -distributor.ha-tracker.cluster=__cluster__,
+            - -distributor.ha-tracker.replica=__replica__,
+
             - -distributor.health-check-ingesters=true
             - -distributor.ingestion-burst-size=200000
             - -distributor.ingestion-rate-limit=100000
@@ -72,7 +82,7 @@ spec:
             - -validation.reject-old-samples=true
             - -validation.reject-old-samples.max-age=12h
             - -limits.per-user-override-config=/etc/cortex/validation/config.yaml
-            - -mem-ballast-size-bytes=1000000000
+            - -mem-ballast-size-bytes=1000000000 # 1 Gb
           env:
             - name: JAEGER_AGENT_HOST
               valueFrom:
@@ -83,18 +93,27 @@ spec:
               value: ratelimiting
             - name: JAEGER_SAMPLER_PARAM
               value: "7"
-          image: quay.io/cortexproject/cortex:v0.2.0
+          image: quay.io/cortexproject/cortex:v0.3.0
           imagePullPolicy: IfNotPresent
           name: distributor
           ports:
             - containerPort: 80
               protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /metrics
+              port: 80
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
           resources:
             limits:
-              memory: 4Gi
+              memory: 8Gi # Usually the distributor only consume like 2GB of RAM, but when set to 4GB I experienced OOM kills
             requests:
               cpu: "4"
-              memory: 4Gi
+              memory: 8Gi
           volumeMounts:
             - mountPath: /etc/cortex/validation
               name: tenant-limit-config
