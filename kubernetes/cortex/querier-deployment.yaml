@@ -60,6 +60,8 @@ spec:
             - -target=querier
             - -server.http-listen-port=80
             - -server.http-write-timeout=1m
+            - -server.grpc-max-send-msg-size-bytes=31457280
+            - -server.grpc-max-recv-msg-size-bytes=31457280
             - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
             - -querier.frontend-address=cortex-query-frontend-headless.monitoring:9095
             - -querier.batch-iterators=true

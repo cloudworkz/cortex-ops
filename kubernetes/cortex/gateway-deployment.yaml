@@ -63,6 +63,8 @@ spec:
       containers:
         - args:
             - -server.http-listen-port=80
+            - -server.grpc-max-send-msg-size-bytes=31457280
+            - -server.grpc-max-recv-msg-size-bytes=31457280
             - -gateway.distributor.address=http://cortex-distributor.monitoring
             - -gateway.query-frontend.address=http://cortex-query-frontend.monitoring
             - -gateway.auth.jwt-secret=$(JWT_SECRET)
