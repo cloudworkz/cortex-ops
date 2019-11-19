@@ -25,97 +25,96 @@ spec:
         component: prometheus
     spec:
       containers:
-      - args:
-        - --volume-dir=/etc/prometheus
-        - --webhook-url=http://127.0.0.1:9090/-/reload
-        image: jimmidyson/configmap-reload:v0.2.2
-        imagePullPolicy: IfNotPresent
-        name: configmap-reloader
-        ports:
-        - containerPort: 9090
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 500m
-            memory: 100Mi
-          requests:
-            cpu: 10m
-            memory: 20Mi
-        volumeMounts:
-        - mountPath: /etc/prometheus
-          name: prometheus-remote-config
-      - args:
-        - --config.file=/etc/prometheus/prometheus.yml
-        - --storage.tsdb.path=/data
-        - --storage.tsdb.no-lockfile
-        - --storage.tsdb.min-block-duration=30m
-        - --storage.tsdb.max-block-duration=30m
-        - --storage.tsdb.retention.time=30m
-        - --web.enable-lifecycle
-        - --web.console.libraries=/etc/prometheus/console_libraries
-        - --web.console.templates=/etc/prometheus/consoles
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.name
-        image: prom/prometheus:v2.10.0
-        imagePullPolicy: IfNotPresent
-        name: prometheus
-        ports:
-        - containerPort: 9090
-          protocol: TCP
-        resources:
-          limits:
-            cpu: "3"
-            memory: 14Gi
-          requests:
-            cpu: "1"
-            memory: 10Gi
-        volumeMounts:
-        - mountPath: /etc/prometheus
-          name: prometheus-remote-config
-        - mountPath: /etc/secrets
-          name: bearer-token
-        - mountPath: /data
-          name: prometheus-remote
+        - args:
+            - --volume-dir=/etc/prometheus
+            - --webhook-url=http://127.0.0.1:9090/-/reload
+          image: jimmidyson/configmap-reload:v0.2.2
+          imagePullPolicy: IfNotPresent
+          name: configmap-reloader
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 100Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          volumeMounts:
+            - mountPath: /etc/prometheus
+              name: prometheus-remote-config
+        - args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/data
+            - --storage.tsdb.no-lockfile
+            - --storage.tsdb.min-block-duration=30m
+            - --storage.tsdb.max-block-duration=30m
+            - --storage.tsdb.retention.time=30m
+            - --web.enable-lifecycle
+            - --web.console.libraries=/etc/prometheus/console_libraries
+            - --web.console.templates=/etc/prometheus/consoles
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+          image: prom/prometheus:v2.14.0
+          imagePullPolicy: IfNotPresent
+          name: prometheus
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "3"
+              memory: 14Gi
+            requests:
+              cpu: "1"
+              memory: 10Gi
+          volumeMounts:
+            - mountPath: /etc/prometheus
+              name: prometheus-remote-config
+            - mountPath: /etc/secrets
+              name: bearer-token
+            - mountPath: /data
+              name: prometheus-remote
       dnsPolicy: ClusterFirst
       initContainers:
-      - command:
-        - chown
-        - -R
-        - 65534:65534
-        - /data
-        image: busybox:latest
-        imagePullPolicy: IfNotPresent
-        name: busybox
-        resources: {}
-        volumeMounts:
-        - mountPath: /data
-          name: prometheus-remote
+        - command:
+            - chown
+            - -R
+            - 65534:65534
+            - /data
+          image: busybox:latest
+          imagePullPolicy: IfNotPresent
+          name: busybox
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: prometheus-remote
       serviceAccount: sa-remote-prometheus
       serviceAccountName: sa-remote-prometheus
       volumes:
-      - configMap:
-          defaultMode: 420
+        - configMap:
+            defaultMode: 420
+            name: prometheus-remote-config
           name: prometheus-remote-config
-        name: prometheus-remote-config
-      - name: bearer-token
-        secret:
-          defaultMode: 420
-          optional: false
-          secretName: prometheus-remote-bearer-token
+        - name: bearer-token
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: prometheus-remote-bearer-token
   updateStrategy:
     type: RollingUpdate
   volumeClaimTemplates:
-  - metadata:
-      name: prometheus-remote
-      namespace: monitoring
-    spec:
-      accessModes:
-      - ReadWriteOnce
-      dataSource: null
-      resources:
-        requests:
-          storage: 100Gi
+    - metadata:
+        name: prometheus-remote
+        namespace: monitoring
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
