@@ -75,8 +75,6 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
-      nodeSelector:
-        cloud.google.com/gke-nodepool: default
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
