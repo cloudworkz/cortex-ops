@@ -62,7 +62,7 @@ spec:
               value: ratelimiting
             - name: JAEGER_SAMPLER_PARAM
               value: "7"
-          image: quay.io/cortexproject/cortex:v0.2.0
+          image: quay.io/cortexproject/cortex:v0.3.0
           imagePullPolicy: IfNotPresent
           name: table-manager
           ports:

@@ -102,7 +102,7 @@ spec:
               value: "7"
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /var/secrets/google/credentials.json
-          image: quay.io/cortexproject/cortex:v0.2.0
+          image: quay.io/cortexproject/cortex:v0.3.0
           imagePullPolicy: IfNotPresent
           name: ingester
           ports:

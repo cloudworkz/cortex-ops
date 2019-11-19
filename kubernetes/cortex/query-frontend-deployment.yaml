@@ -84,7 +84,7 @@ spec:
               value: ratelimiting
             - name: JAEGER_SAMPLER_PARAM
               value: "7"
-          image: quay.io/cortexproject/cortex:master-5d867bc1
+          image: quay.io/cortexproject/cortex:v0.3.0
           imagePullPolicy: IfNotPresent
           name: query-frontend
           ports:
