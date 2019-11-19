@@ -67,10 +67,10 @@ spec:
             - -querier.batch-iterators=true
             - -querier.ingester-streaming=true
             - -querier.frontend-client.grpc-max-send-msg-size=104857600
-            - -querier.max-concurrent=4
+            - -querier.max-concurrent=10
             - -querier.max-samples=100000000
             - -querier.query-ingesters-within=12h
-            - -querier.worker-parallelism=2
+            - -querier.worker-parallelism=5
             - -ring.heartbeat-timeout=5m
             - -distributor.health-check-ingesters=true
             - -distributor.replication-factor=3
