@@ -38,7 +38,7 @@ spec:
             - -bigtable.instance=cortex
             - -bigtable.project=gcp-project-name
             - -table-manager.retention-deletes-enabled=true
-            - -table-manager.retention-period=336h
+            - -table-manager.retention-period=840h # 5 weeks. If you change this, also edit max query length in the query frontend
             - -dynamodb.chunk-table.inactive-read-throughput=0
             - -dynamodb.chunk-table.inactive-write-throughput=0
             - -dynamodb.chunk-table.read-throughput=0
