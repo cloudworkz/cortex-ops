@@ -70,6 +70,7 @@ spec:
             - -frontend.memcached.service=memcached-client
             - -frontend.memcached.timeout=200ms
             - -querier.align-querier-with-step=true
+            - -querier.max-outstanding-requests-per-tenant=100 # 100 per replica, should be fine. If you face too many outstanding requests, rather try to figure out why it takes so long to process these queires
             - -querier.cache-results=true
             - -querier.compress-http-responses=true
             - -querier.split-queries-by-day=true
