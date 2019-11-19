@@ -20,6 +20,7 @@ All deployment files and the corresponding documentation can be found in `./kube
 
 - Jaeger (Agent Daemonset, Collector Deployment, UI Deployemnt)
 - Prometheus, which is responsible for sending metrics from tenants to your Cortex cluster using the remote write API
+- Elasticsearch (using [Elastic's Kubernetes Operator](https://github.com/elastic/cloud-on-k8s))
 - Cortex, which includes:
   - Distributor
   - [Gateway](https://github.com/weeco/cortex-gateway) - Auth Gateway (not part of Cortex)
@@ -33,7 +34,6 @@ All deployment files and the corresponding documentation can be found in `./kube
 **Deployments which are not covered (yet):**
 
 - Consul (required for Cortex components)
-- Elasticsearch / Cassandra (required for Jaeger)
 - Cortex components required for Alertmanager (ruler, configs API, postgres db)
 - Other underlying Timeseries Databases for Cortex (such as Cassandra or DynamoDB)
 - Grafana deployment with provisioned datasources querying Cortex
