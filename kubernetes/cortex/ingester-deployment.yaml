@@ -60,6 +60,8 @@ spec:
             - -target=ingester
             - -server.http-listen-port=80
             - -server.grpc-max-concurrent-streams=100000
+            - -server.grpc-max-send-msg-size-bytes=31457280
+            - -server.grpc-max-recv-msg-size-bytes=31457280
             - -ingester.chunk-encoding=3
             - -ingester-client.expected-timeseries=1000, # This should equal to max_samples_per_send which is 1k too
             - -ingester-client.expected-labels=30, # 95th percentile is 20 labels
