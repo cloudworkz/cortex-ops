@@ -6,7 +6,7 @@ metadata:
 data:
   config.yaml: |-
     configs:
-    - from: 2019-09-09
+    - from: 2019-09-09 # Set this to the first day you start ingesting your metrics
       chunks:
         period: 168h
         prefix: cortex_chunks_
