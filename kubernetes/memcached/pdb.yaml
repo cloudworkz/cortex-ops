@@ -10,4 +10,4 @@ spec:
   selector:
     matchLabels:
       app: memcached
-  minAvailable: 2
+  maxUnavailable: 1
