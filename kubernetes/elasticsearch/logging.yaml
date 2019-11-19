@@ -1,0 +1,161 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+kind: Elasticsearch
+metadata:
+  name: logging
+  namespace: elastic-system
+spec:
+  version: 7.4.2
+  nodeSets:
+    - name: master
+      count: 3
+      config:
+        node.master: true
+        node.data: false
+        node.ingest: false
+        cluster.remote.connect: false
+        xpack.monitoring.enabled: true
+        xpack.monitoring.collection.enabled: true
+        xpack.security.authc.anonymous.username: anonymous
+        xpack.security.authc.anonymous.roles: superuser
+        xpack.security.authc.anonymous.authz_exception: true
+      podTemplate:
+        spec:
+          # Set virtual memory on Kubernetes host, see: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-virtual-memory.html
+          initContainers:
+            - name: sysctl
+              securityContext:
+                privileged: true
+              command: ["sh", "-c", "sysctl -w vm.max_map_count=262144"]
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: cloud.google.com/gke-nodepool
+                        operator: In
+                        values:
+                          - default-v2
+    - name: data-zone-b
+      count: 2
+      config:
+        node.master: false
+        node.data: true
+        node.ingest: true
+        node.attr.zone: europe-west1-b
+        cluster.routing.allocation.awareness.attributes: zone
+        xpack.monitoring.enabled: true
+        xpack.monitoring.collection.enabled: true
+        xpack.security.authc.anonymous.username: anonymous
+        xpack.security.authc.anonymous.roles: superuser
+        xpack.security.authc.anonymous.authz_exception: true
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 100Gi
+            storageClassName: ssd
+      podTemplate:
+        spec:
+          tolerations:
+            - effect: NoSchedule
+              key: app
+              operator: Equal
+              value: elasticsearch
+          # Set virtual memory on Kubernetes host, see: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-virtual-memory.html
+          initContainers:
+            - name: sysctl
+              securityContext:
+                privileged: true
+              command: ["sh", "-c", "sysctl -w vm.max_map_count=262144"]
+          containers:
+            - name: elasticsearch
+              # specify resource limits and requests
+              resources:
+                requests:
+                  memory: "10Gi"
+                  cpu: 1
+                limits:
+                  memory: "10Gi"
+                  cpu: 4
+              env:
+                - name: "ES_JAVA_OPTS"
+                  value: "-Xms2g -Xmx2g"
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: failure-domain.beta.kubernetes.io/zone
+                        operator: In
+                        values:
+                          - europe-west1-b
+                      - key: cloud.google.com/gke-nodepool
+                        operator: In
+                        values:
+                          - elasticsearch
+    - name: data-zone-c
+      count: 2
+      config:
+        node.master: false
+        node.data: true
+        node.ingest: true
+        node.attr.zone: europe-west1-c
+        cluster.routing.allocation.awareness.attributes: zone
+        xpack.monitoring.enabled: true
+        xpack.monitoring.collection.enabled: true
+        xpack.security.authc.anonymous.username: anonymous
+        xpack.security.authc.anonymous.roles: superuser
+        xpack.security.authc.anonymous.authz_exception: true
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 100Gi
+            storageClassName: ssd
+      podTemplate:
+        spec:
+          tolerations:
+            - effect: NoSchedule
+              key: app
+              operator: Equal
+              value: elasticsearch
+          # Set virtual memory on Kubernetes host, see: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-virtual-memory.html
+          initContainers:
+            - name: sysctl
+              securityContext:
+                privileged: true
+              command: ["sh", "-c", "sysctl -w vm.max_map_count=262144"]
+          containers:
+            - name: elasticsearch
+              # specify resource limits and requests
+              resources:
+                requests:
+                  memory: "10Gi"
+                  cpu: 1
+                limits:
+                  memory: "10Gi"
+                  cpu: 4
+              env:
+                - name: "ES_JAVA_OPTS"
+                  value: "-Xms2g -Xmx2g"
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: failure-domain.beta.kubernetes.io/zone
+                        operator: In
+                        values:
+                          - europe-west1-c
+                      - key: cloud.google.com/gke-nodepool
+                        operator: In
+                        values:
+                          - elasticsearch
