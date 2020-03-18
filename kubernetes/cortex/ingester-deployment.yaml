@@ -63,8 +63,8 @@ spec:
             - -server.grpc-max-send-msg-size-bytes=31457280
             - -server.grpc-max-recv-msg-size-bytes=31457280
             - -ingester.chunk-encoding=3
-            - -ingester-client.expected-timeseries=1000, # This should equal to max_samples_per_send which is 1k too
-            - -ingester-client.expected-labels=30, # 95th percentile is 20 labels
+            - -ingester-client.expected-timeseries=1000 # This should equal to max_samples_per_send which is 1k too
+            - -ingester-client.expected-labels=30 # 95th percentile is 20 labels
             - -ingester.join-after=30s
             - -ingester.max-chunk-age=6h
             - -ingester.chunk-age-jitter=0
