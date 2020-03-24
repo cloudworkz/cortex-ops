@@ -63,8 +63,8 @@ spec:
             - -server.grpc-max-send-msg-size-bytes=31457280
             - -server.grpc-max-recv-msg-size-bytes=31457280
             - -ingester.chunk-encoding=3
-            - -ingester-client.expected-timeseries=1000, # This should equal to max_samples_per_send which is 1k too
-            - -ingester-client.expected-labels=30, # 95th percentile is 20 labels
+            - -ingester-client.expected-timeseries=1000 # This should equal to max_samples_per_send which is 1k too
+            - -ingester-client.expected-labels=30 # 95th percentile is 20 labels
             - -ingester.join-after=30s
             - -ingester.max-chunk-age=6h
             - -ingester.chunk-age-jitter=0
@@ -82,7 +82,7 @@ spec:
             - -memcached.hostname=memcached.monitoring
             - -memcached.timeout=3s
             - -memcached.service=memcached-client
-            - -store.bigchunk-size-cap-bytes=10485760, # 10kb - 95th percentile is 6kb
+            - -store.bigchunk-size-cap-bytes=10485760 # 10kb - 95th percentile is 6kb
             - -store.index-cache-write.memcached.hostname=consul-server.hashicorp.svc.cluster.local:8500
             - -store.index-cache-write.memcached.service=memcached-client
             - -store.index-cache-write.memcached.expiration=24h
