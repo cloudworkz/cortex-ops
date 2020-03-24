@@ -63,13 +63,13 @@ spec:
             - -consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
 
             # HA tracker options
-            - -distributor.ha-tracker.enable=true,
-            - -distributor.ha-tracker.enable-for-all-users=true,
-            - -distributor.ha-tracker.consul.hostname=consul-server.hashicorp.svc.cluster.local:8500,
-            - -distributor.ha-tracker.prefix=ha/,
-            - -distributor.ha-tracker.store=consul,
-            - -distributor.ha-tracker.cluster=__cluster__,
-            - -distributor.ha-tracker.replica=__replica__,
+            - -distributor.ha-tracker.enable=true
+            - -distributor.ha-tracker.enable-for-all-users=true
+            - -distributor.ha-tracker.consul.hostname=consul-server.hashicorp.svc.cluster.local:8500
+            - -distributor.ha-tracker.prefix=ha/
+            - -distributor.ha-tracker.store=consul
+            - -distributor.ha-tracker.cluster=__cluster__
+            - -distributor.ha-tracker.replica=__replica__
 
             - -distributor.health-check-ingesters=true
             - -distributor.ingestion-burst-size=200000

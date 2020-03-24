@@ -82,7 +82,7 @@ spec:
             - -memcached.hostname=memcached.monitoring
             - -memcached.timeout=3s
             - -memcached.service=memcached-client
-            - -store.bigchunk-size-cap-bytes=10485760, # 10kb - 95th percentile is 6kb
+            - -store.bigchunk-size-cap-bytes=10485760 # 10kb - 95th percentile is 6kb
             - -store.index-cache-write.memcached.hostname=consul-server.hashicorp.svc.cluster.local:8500
             - -store.index-cache-write.memcached.service=memcached-client
             - -store.index-cache-write.memcached.expiration=24h
